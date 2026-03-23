@@ -134,7 +134,8 @@ const App = () => {
   };
 
   const handleProtectedLogin = (role, phone, password) => {
-    if (role === 'admin' && password === "Zxcv1234.") {
+    const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD;
+    if (role === 'admin' && adminPassword && password === adminPassword) {
       setCurrentUser({ role: 'admin', name: 'Admin' });
       setCurrentPage('admin-panel');
       setLoginError(false);

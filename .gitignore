@@ -24,6 +24,11 @@ dist-ssr
 *.sw?
 firebase-debug.log
 
+# Vite — frontend maxfiy kalitlar (.env.example repoda qoladi)
+.env
+.env.local
+.env.*.local
+
 # Firebase Functions — token va maxfiy ma'lumotlar
 functions/.env
 functions/.env.*
