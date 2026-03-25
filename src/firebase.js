@@ -1,6 +1,5 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-import { getFunctions } from "firebase/functions";
 
 const {
   VITE_FIREBASE_API_KEY,
@@ -30,7 +29,3 @@ if (!VITE_FIREBASE_API_KEY || !VITE_FIREBASE_PROJECT_ID) {
 
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
-
-const functions = getFunctions(app, "us-central1");
-// Mahalliy test: import { connectFunctionsEmulator } from "firebase/functions"; connectFunctionsEmulator(functions, "127.0.0.1", 5001);
-export { functions };

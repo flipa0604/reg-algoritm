@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { httpsCallable } from 'firebase/functions';
-import { ArrowLeft, ChevronRight, User, Clock, Lock, Send } from 'lucide-react';
-import { functions } from '../firebase';
+import { ArrowLeft, Lock } from 'lucide-react';
 
 const monthNames = ['Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'Iyun', 'Iyul', 'Avgust', 'Sentabr', 'Oktabr', 'Noyabr', 'Dekabr'];
-const TELEGRAM_BOT_USERNAME = 'registonbandbot'; // @registonbandbot — Registon Registration
 
 const StudentBooking = ({ 
   setCurrentPage, bookingType, setBookingType, teachers, selectedTeacher, 
@@ -17,11 +14,6 @@ const StudentBooking = ({
   const [topicType, setTopicType] = useState('Speaking');
   const [customTopic, setCustomTopic] = useState('');
   const GROUP_DURATION_MINS = 120; // Guruh darsi doim 2 soat
-  // Telegram tasdiqlash (yangi o'quvchilar uchun)
-  const [telegramVerified, setTelegramVerified] = useState(false);
-  const [verificationCode, setVerificationCode] = useState('');
-  const [verifyLoading, setVerifyLoading] = useState(false);
-  const [verifyError, setVerifyError] = useState('');
 
   // "15-Mart" formatidagi sanani Date ga aylantirish
   const parseGroupDate = (dateStr) => {
@@ -57,15 +49,11 @@ const StudentBooking = ({
     if (user) {
       setStudentName(user.student);
       setOriginGroup(user.originGroup || "Bazada ko'rsatilmagan");
+    } else {
+      setStudentName('');
+      setOriginGroup('');
     }
   }, [studentPhone, bookings, setStudentName, setOriginGroup]);
-
-  // Telefon o'zgarganda Telegram tasdiqlashni qayta so'rash
-  useEffect(() => {
-    setTelegramVerified(false);
-    setVerificationCode('');
-    setVerifyError('');
-  }, [studentPhone]);
 
   // Vaqtni hisoblash uchun yordamchi funksiyalar
   const timeToMins = (t) => {
@@ -104,27 +92,6 @@ const StudentBooking = ({
       const bEnd = b.endTime ? timeToMins(b.endTime) : bStart + 30;
       return startMins < bEnd && bStart < endMins;
     });
-  };
-
-  const handleVerifyTelegram = async () => {
-    const code = verificationCode.replace(/\D/g, '').slice(0, 6);
-    if (code.length !== 6) {
-      setVerifyError('Kod 6 ta raqamdan iborat bo\'lishi kerak.');
-      return;
-    }
-    setVerifyError('');
-    setVerifyLoading(true);
-    try {
-      const verifyTelegramCode = httpsCallable(functions, 'verifyTelegramCode');
-      await verifyTelegramCode({ phone: studentPhone, code });
-      setTelegramVerified(true);
-      setVerificationCode('');
-    } catch (err) {
-      const msg = err?.details?.message ?? err?.message ?? err?.code ?? 'Tasdiqlash xatosi';
-      setVerifyError(typeof msg === 'string' ? msg : 'Kod noto\'g\'ri yoki muddati tugagan.');
-    } finally {
-      setVerifyLoading(false);
-    }
   };
 
   const onBookingClick = () => {
@@ -272,41 +239,12 @@ const StudentBooking = ({
                         BRON QILISHNI TASDIQLASH
                       </button>
                     </>
-                  ) : !telegramVerified ? (
-                    <>
-                      <div className="bg-slate-50 p-6 rounded-2xl border-2 border-slate-200 space-y-4">
-                        <p className="font-black text-slate-800 text-sm uppercase tracking-tight">Raqam bazada topilmadi — Telegram orqali tasdiqlang</p>
-                        <p className="text-slate-600 text-sm font-bold">
-                          Quyidagi tugma orqali botga o'ting, «Raqamingizni yuborish» tugmasini bosing. Bot sizga kod yuboradi va saytga qaytish havolasini beradi. Keyin bu sahifada raqam avtomat ko'rinadi va kodni kiriting.
-                        </p>
-                        <a href={`https://t.me/${TELEGRAM_BOT_USERNAME}`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-lg shadow-xl transition-all hover:bg-blue-700 active:scale-95 uppercase tracking-widest">
-                          Telegram botga o'tish
-                        </a>
-                        <p className="text-slate-500 text-xs font-bold">Bot 6 xonali kod yuboradi va saytga qaytish havolasini beradi. Kodni quyida kiriting.</p>
-                      </div>
-                      <div>
-                        <label className="text-xs font-black text-slate-400 uppercase ml-2 mb-2 block">Tasdiqlash kodi</label>
-                        <input 
-                          type="text" 
-                          inputMode="numeric" 
-                          placeholder="123456" 
-                          maxLength="6" 
-                          className="w-full p-4 bg-slate-100 rounded-2xl outline-none font-bold border-2 border-transparent focus:border-blue-600 transition-all text-center text-xl tracking-[0.4em]" 
-                          value={verificationCode} 
-                          onChange={(e) => { setVerificationCode(e.target.value.replace(/\D/g, '')); setVerifyError(''); }} 
-                        />
-                      </div>
-                      {verifyError && <p className="text-red-500 text-sm font-bold">{verifyError}</p>}
-                      <button 
-                        onClick={handleVerifyTelegram} 
-                        disabled={verifyLoading || verificationCode.replace(/\D/g, '').length !== 6} 
-                        className="w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-lg shadow-xl transition-all hover:bg-blue-700 active:scale-95 uppercase tracking-widest flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {verifyLoading ? 'Tekshirilmoqda...' : <><Send size={20} /> Tasdiqlash</>}
-                      </button>
-                    </>
                   ) : (
                     <>
+                      <div className="bg-emerald-50 p-4 rounded-2xl border-2 border-emerald-100">
+                        <p className="text-emerald-900 font-bold text-sm">Yangi ro'yxatdan o'tish</p>
+                        <p className="text-emerald-800/90 text-xs font-bold mt-1">Ism, guruh va parolni kiriting — darsni band qilishingiz mumkin.</p>
+                      </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="text-[10px] font-black text-slate-400 uppercase ml-2 mb-1 block">Ismingiz</label>

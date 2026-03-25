@@ -45,7 +45,7 @@ const App = () => {
     onSnapshot(collection(db, "banned_users"), (s) => setBannedUsers(s.docs.map(d => ({ id: d.id, ...d.data() })))); // YANGI QO'SHILDI
   }, []);
 
-  // Bot orqali raqam yuborilgach saytga ?phone=XXX bilan kelganda raqamni avtomat to'ldirish va booking sahifasiga yo'naltirish
+  // URL ?phone=901234567 — booking sahifasida raqamni avtomat to'ldirish
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const phoneParam = params.get('phone');
